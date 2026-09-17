@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kanzler-Simulator - Politik der 1990er</title>
+<style>
+
+/* Farben an einer Stelle, dann kann man sie leichter ändern */
+:root {
+  --blau:       #2b5797;
+  --blau-dunkel:#1d3c6b;
+  --blau-hell:  #eef3fa;
+  --linie:      #ccd7e6;
+  --text:       #1f2733;
+  --text-grau:  #5a6676;
+  --gruen:      #3f8f5c;
+  --orange:     #d98324;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background-color: #e8eef6;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  width: 92%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding-top: 28px;
+  padding-bottom: 50px;
+}
+
+h1 {
+  font-size: 34px;
+  text-align: center;
+  margin: 0 0 6px;
+  letter-spacing: -0.5px;
+}
+
+h2 {
+  font-size: 23px;
+  color: var(--blau-dunkel);
+  margin: 0 0 14px;
+}
+
+h3 {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+
+p { font-size: 16px; line-height: 1.6; }
+
+/* die einzelnen Seiten */
+.screen {
+  background-color: #ffffff;
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(30, 50, 80, 0.08);
+  padding: 26px 26px 28px;
+  margin-bottom: 16px;
+}
+
+.hidden { display: none; }
+
+/* Startseite */
+#screen-start {
+  text-align: center;
+  padding: 50px 26px;
+  background: linear-gradient(160deg, #ffffff 0%, var(--blau-hell) 100%);
+}
+
+.kicker {
+  font-size: 13px;
+  color: var(--blau);
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.untertitel {
+  font-size: 16px;
+  color: var(--text-grau);
+  margin-bottom: 18px;
+}
+
+.jahre {
+  display: inline-block;
+  background-color: var(--blau);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+/* kleines Schild mit der Jahreszahl */
+.eyebrow-jahr {
+  display: inline-block;
+  background-color: var(--blau-hell);
+  color: var(--blau-dunkel);
+  border: 1px solid var(--linie);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 4px 12px;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+button.btn {
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: var(--blau);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 26px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+button.btn:hover { background-color: var(--blau-dunkel); }
+
+button.btn.sekundaer {
+  background-color: #ffffff;
+  color: var(--blau-dunkel);
+  border: 2px solid var(--linie);
+}
+button.btn.sekundaer:hover { background-color: var(--blau-hell); }
+
+/* Anzeige, wie weit man ist */
+.fortschritt { margin-bottom: 16px; }
+.fortschritt .punkt {
+  display: inline-block;
+  width: 34px;
+  height: 6px;
+  background-color: #dde4ee;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+.fortschritt .punkt.aktiv  { background-color: var(--blau); }
+.fortschritt .punkt.fertig { background-color: #92aacd; }
+
+/* Auswahlmöglichkeiten */
+.optionen { margin-top: 16px; }
+
+.option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 15px;
+  background-color: #fbfcfe;
+  border: 1px solid var(--linie);
+  border-left: 4px solid #b9c9de;
+  border-radius: 8px;
+  padding: 13px 15px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.option:hover {
+  background-color: var(--blau-hell);
+  border-left-color: var(--blau);
+}
+.option:disabled { cursor: default; opacity: 0.55; }
+.option.gewaehlt {
+  opacity: 1;
+  border-left-color: var(--gruen);
+  background-color: #f1f8f3;
+}
+
+.option-titel { display: block; font-weight: bold; margin-bottom: 3px; }
+.option-text  { display: block; color: var(--text-grau); }
+
+/* Antwort nach dem Klicken */
+.rueckmeldung {
+  background-color: #f1f8f3;
+  border: 1px solid #b6d8c1;
+  border-left: 4px solid var(--gruen);
+  border-radius: 8px;
+  padding: 12px 15px;
+  font-size: 15px;
+  margin-top: 16px;
+}
+
+.weiter-zeile { margin-top: 18px; text-align: right; }
+
+/* Kasten mit Infos */
+.fakten-box {
+  background-color: var(--blau-hell);
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+  padding: 14px 20px;
+  margin: 16px 0;
+}
+.fakten-box ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* Balkendiagramm zur Wahl */
+.chart { margin: 22px 0; }
+
+.chart-zeile { margin-bottom: 9px; }
+
+.chart-partei {
+  display: inline-block;
+  width: 80px;
+  font-size: 14px;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+.chart-track {
+  display: inline-block;
+  width: 58%;
+  height: 20px;
+  background-color: #f0f3f7;
+  border-radius: 4px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.chart-bar {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+
+.chart-wert {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: bold;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.gewinner-hinweis {
+  background-color: var(--blau-dunkel);
+  color: white;
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.gewinner-hinweis b { color: #ffd77a; }
+
+/* ===== Ergebnis-Seite ===== */
+.ergebnis-karte {
+  background: linear-gradient(160deg, var(--blau) 0%, var(--blau-dunkel) 100%);
+  color: white;
+  border-radius: 10px;
+  padding: 26px 24px;
+  text-align: center;
+  margin-bottom: 18px;
+}
+.ergebnis-karte .label {
+  font-size: 13px;
+  letter-spacing: 2px;
+  opacity: 0.85;
+}
+.ergebnis-karte .titel {
+  font-size: 27px;
+  font-weight: bold;
+  margin: 8px 0 10px;
+}
+.ergebnis-karte .beschreibung {
+  font-size: 15.5px;
+  line-height: 1.6;
+  margin: 0 auto;
+  max-width: 520px;
+  opacity: 0.95;
+}
+.ergebnis-karte .note {
+  display: inline-block;
+  margin-top: 16px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 6px 18px;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+/* die drei Balken mit dem Profil */
+.profil-zeile { margin-bottom: 12px; }
+.profil-name {
+  display: inline-block;
+  width: 150px;
+  font-size: 14px;
+  font-weight: bold;
+  vertical-align: middle;
+}
+.profil-track {
+  display: inline-block;
+  width: 48%;
+  height: 14px;
+  background-color: #eef1f6;
+  border-radius: 7px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+.profil-bar {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: 7px;
+  transition: width 0.9s ease;
+}
+.profil-wert {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--text-grau);
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.entscheidungs-liste {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 15px;
+}
+.entscheidungs-liste li {
+  padding: 8px 0;
+  border-bottom: 1px solid #edf1f6;
+}
+.entscheidungs-liste li:last-child { border-bottom: none; }
+.entscheidungs-liste .schritt {
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  text-align: center;
+  background-color: var(--blau-hell);
+  color: var(--blau-dunkel);
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.zitat {
+  font-style: italic;
+  font-size: 17px;
+  border-left: 4px solid var(--blau);
+  padding-left: 14px;
+  color: var(--text-grau);
+  margin: 18px 0;
+}
+
+footer.hinweis {
+  text-align: center;
+  font-size: 12px;
+  color: #8894a5;
+  margin-top: 16px;
+}
+
+/* damit es auf dem Handy nicht kaputt geht */
+@media (max-width: 600px) {
+  h1 { font-size: 26px; }
+  .screen { padding: 20px 16px; }
+  .chart-track  { width: 42%; }
+  .profil-name  { width: 110px; font-size: 13px; }
+  .profil-track { width: 38%; }
+  .ergebnis-karte .titel { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Startseite -->
+  <section id="screen-start" class="screen">
+    <div class="kicker">POLITIK DER 1990ER</div>
+    <h1>Kanzler-Simulator</h1>
+    <div class="untertitel">Du entscheidest - und schaust, was daraus wird.</div>
+    <div class="jahre">Deutschland 1990 - 1998</div>
+    <br>
+    <button class="btn" id="btn-start">Spiel starten</button>
+  </section>
+
+  <!-- Wiedervereinigung 1990 -->
+  <section id="screen-1" class="screen hidden">
+    <div class="fortschritt" data-schritt="1"></div>
+    <span class="eyebrow-jahr">3. Oktober 1990</span>
+    <h2>Deutschland ist wieder vereint</h2>
+    <p>
+      Nach über 40 Jahren Teilung wurden die Bundesrepublik Deutschland und die DDR
+      am 3. Oktober 1990 wieder zu einem gemeinsamen Staat. Als Bundeskanzlerin bzw.
+      Bundeskanzler stehst du nun vor einer großen Aufgabe: Deutschland muss als
+      gemeinsamer Staat zusammenwachsen.
+    </p>
+    <p><b>Was möchtest du zuerst angehen?</b></p>
+    <div class="optionen" id="optionen-1"></div>
+    <div id="rueckmeldung-1"></div>
+  </section>
+
+  <!-- Zeit nach der Wiedervereinigung -->
+  <section id="screen-2" class="screen hidden">
+    <div class="fortschritt" data-schritt="2"></div>
+    <span class="eyebrow-jahr">nach 1990</span>
+    <h2>Deutschland wächst zusammen</h2>
+    <p>
+      Nach der Wiedervereinigung müssen viele Städte, Straßen und Betriebe
+      modernisiert werden. Außerdem werden neue Gesetze eingeführt, damit
+      Deutschland als gemeinsamer Staat gut funktioniert.
+    </p>
+    <p><b>Womit würdest du anfangen?</b></p>
+    <div class="optionen" id="optionen-2"></div>
+    <div id="rueckmeldung-2"></div>
+  </section>
+
+  <!-- Regierungswechsel 1998 -->
+  <section id="screen-3" class="screen hidden">
+    <div class="fortschritt" data-schritt="3"></div>
+    <span class="eyebrow-jahr">1998</span>
+    <h2>1998 kommt es zum Regierungswechsel</h2>
+    <p>
+      1998 endet die 16-jährige Amtszeit von Bundeskanzler Helmut Kohl.
+      Nach der Bundestagswahl wird Gerhard Schröder neuer Bundeskanzler.
+      Mit dem Regierungswechsel begann eine neue politische Richtung.
+    </p>
+    <div class="fakten-box">
+      <p style="margin:0 0 8px;"><b>Die neue Regierung bringt Veränderungen in folgenden Bereichen:</b></p>
+      <ul>
+        <li>Steuerreformen</li>
+        <li>Familienpolitik</li>
+        <li>Bildungspolitik</li>
+        <li>Arbeitsmarktpolitik</li>
+        <li>Sozialpolitik</li>
+      </ul>
+    </div>
+    <p><b>Womit würdest du anfangen?</b></p>
+    <div class="optionen" id="optionen-3"></div>
+    <div id="rueckmeldung-3"></div>
+  </section>
+
+  <!-- Bundestagswahl 1998 -->
+  <section id="screen-4" class="screen hidden">
+    <div class="fortschritt" data-schritt="4"></div>
+    <span class="eyebrow-jahr">27.09.1998</span>
+    <h2>Die Bundestagswahl 1998</h2>
+    <p>So sah das Ergebnis der Bundestagswahl am 27.09.1998 aus:</p>
+
+    <div class="chart" id="wahl-chart"></div>
+
+    <div class="gewinner-hinweis" id="gewinner-hinweis"></div>
+
+    <div class="weiter-zeile">
+      <button class="btn" id="btn-weiter-4">Zum Ergebnis</button>
+    </div>
+  </section>
+
+  <!-- Abschluss -->
+  <section id="screen-ende" class="screen hidden">
+
+    <!-- der große Ergebnis-Kasten -->
+    <div class="ergebnis-karte">
+      <div class="label">DEIN ERGEBNIS</div>
+      <div class="titel" id="ergebnis-titel"></div>
+      <div class="beschreibung" id="ergebnis-text"></div>
+      <div class="note" id="ergebnis-note"></div>
+    </div>
+
+    <h3>Dein Regierungsprofil</h3>
+    <div id="profil-chart"></div>
+
+    <h3 style="margin-top:22px;">Deine Entscheidungen</h3>
+    <ul class="entscheidungs-liste" id="entscheidungs-liste"></ul>
+
+    <h3 style="margin-top:22px;">Das ist wirklich passiert</h3>
+    <p class="zitat">
+      "Die 1990er Jahre waren in Deutschland unter anderem durch die Wiedervereinigung
+      und den Regierungswechsel von 1998 geprägt."
+    </p>
+    <div class="fakten-box">
+      <ul id="zusammenfassung-liste"></ul>
+    </div>
+
+    <div class="weiter-zeile">
+      <button class="btn sekundaer" id="btn-neustart">Nochmal spielen</button>
+    </div>
+  </section>
+
+  <footer class="hinweis">Die Inhalte stammen aus unserem Plakat.</footer>
+</div>
+
+
+<script>
+// Hier stehen erst mal alle Infos, die das Spiel braucht.
+
+// Wahlergebnis Bundestagswahl 27.09.1998 (Werte laut Plakat, nicht verändern!)
+var WAHLERGEBNIS_1998 = [
+  { partei: "Union",  prozent: 35.1, farbe: "#4a5568" },
+  { partei: "SPD",    prozent: 40.9, farbe: "#d0303a" },
+  { partei: "FDP",    prozent: 6.2,  farbe: "#d9b400" },
+  { partei: "Grüne",  prozent: 6.7,  farbe: "#3f8f5c" },
+  { partei: "PDS",    prozent: 5.1,  farbe: "#a24f8e" },
+  { partei: "Andere", prozent: 5.9,  farbe: "#9aa5b1" }
+];
+
+// Die wichtigsten Punkte für die Zusammenfassung am Ende
+var ABSCHLUSS_FAKTEN = [
+  "3. Oktober 1990: Deutsche Wiedervereinigung",
+  "Deutschland musste nach der Wiedervereinigung als gemeinsamer Staat zusammenwachsen",
+  "Städte, Straßen und Betriebe wurden modernisiert",
+  "neue Gesetze wurden eingeführt",
+  "1998 endete die 16-jährige Amtszeit von Helmut Kohl",
+  "Gerhard Schröder wurde neuer Bundeskanzler",
+  "mit dem Regierungswechsel begann eine neue politische Richtung",
+  "Steuerreformen",
+  "Familienpolitik",
+  "Bildungspolitik",
+  "Veränderungen in der Arbeitsmarktpolitik",
+  "Veränderungen in der Sozialpolitik"
+];
+
+// Jede Antwort gibt Punkte auf drei Bereiche:
+// zusammenhalt / aufbau / reform
+var OPTIONEN_SITUATION_1 = [
+  {
+    titel: "Zusammenwachsen fördern",
+    text: "Du setzt das Zusammenwachsen Deutschlands an die erste Stelle.",
+    rueckmeldung: "Genau darum ging es nach der Wiedervereinigung: Deutschland musste als gemeinsamer Staat zusammenwachsen.",
+    punkte: { zusammenhalt: 3, aufbau: 1, reform: 0 }
+  },
+  {
+    titel: "Modernisierung vorantreiben",
+    text: "Du möchtest zuerst bei der Modernisierung ansetzen.",
+    rueckmeldung: "Nach der Wiedervereinigung wurden viele Städte, Straßen und Betriebe modernisiert.",
+    punkte: { zusammenhalt: 1, aufbau: 3, reform: 0 }
+  },
+  {
+    titel: "Neue Gesetze einführen",
+    text: "Du möchtest zuerst neue Gesetze für das vereinte Deutschland auf den Weg bringen.",
+    rueckmeldung: "Nach der Wiedervereinigung wurden auch neue Gesetze eingeführt.",
+    punkte: { zusammenhalt: 1, aufbau: 0, reform: 3 }
+  }
+];
+
+var OPTIONEN_SITUATION_2 = [
+  {
+    titel: "Städte modernisieren",
+    text: "Du würdest zuerst die Modernisierung der Städte angehen.",
+    rueckmeldung: "Ein Teil der Veränderungen nach der Wiedervereinigung war die Modernisierung vieler Städte.",
+    punkte: { zusammenhalt: 2, aufbau: 3, reform: 0 }
+  },
+  {
+    titel: "Straßen modernisieren",
+    text: "Du würdest zuerst bei den Straßen ansetzen.",
+    rueckmeldung: "Auch Straßen wurden nach der Wiedervereinigung modernisiert.",
+    punkte: { zusammenhalt: 1, aufbau: 4, reform: 0 }
+  },
+  {
+    titel: "Betriebe modernisieren",
+    text: "Du würdest zuerst die Modernisierung von Betrieben angehen.",
+    rueckmeldung: "Auch viele Betriebe wurden nach der Wiedervereinigung modernisiert.",
+    punkte: { zusammenhalt: 0, aufbau: 3, reform: 2 }
+  }
+];
+
+var OPTIONEN_SITUATION_3 = [
+  {
+    titel: "Steuerreformen",
+    text: "Du beginnst mit Steuerreformen.",
+    rueckmeldung: "Steuerreformen gehörten zu den Veränderungen der neuen Regierung.",
+    punkte: { zusammenhalt: 0, aufbau: 1, reform: 4 }
+  },
+  {
+    titel: "Familien- und Bildungspolitik",
+    text: "Du verbesserst zuerst die Familien- und Bildungspolitik.",
+    rueckmeldung: "Auch Familien- und Bildungspolitik wurden verbessert.",
+    punkte: { zusammenhalt: 3, aufbau: 0, reform: 2 }
+  },
+  {
+    titel: "Arbeitsmarkt und Soziales",
+    text: "Du beginnst mit Veränderungen in der Arbeitsmarkt- und Sozialpolitik.",
+    rueckmeldung: "Auch in der Arbeitsmarkt- und Sozialpolitik begann es Veränderungen zu geben.",
+    punkte: { zusammenhalt: 3, aufbau: 1, reform: 2 }
+  }
+];
+
+// Je nachdem, welcher Bereich am meisten Punkte hat, kommt ein anderer Titel raus
+var ERGEBNIS_TYPEN = {
+  zusammenhalt: {
+    titel: "Kanzler:in des Zusammenhalts",
+    text: "Dir war am wichtigsten, dass Ost und West wirklich zusammenwachsen. Du hast auf Menschen, Familien und Bildung gesetzt, statt zuerst Beton anzurühren.",
+    note: "Rückblick: Das Zusammenwachsen war die zentrale Aufgabe nach 1990."
+  },
+  aufbau: {
+    titel: "Aufbau-Kanzler:in",
+    text: "Du hast zuerst angepackt: Städte, Straßen und Betriebe. Sichtbare Veränderungen waren dir wichtiger als lange Debatten.",
+    note: "Rückblick: Tatsächlich wurden nach 1990 viele Städte, Straßen und Betriebe modernisiert."
+  },
+  reform: {
+    titel: "Reform-Kanzler:in",
+    text: "Du hast bei den Regeln angesetzt: neue Gesetze, Steuern, Arbeitsmarkt. Umbauen statt nur ausbessern.",
+    note: "Rückblick: Mit dem Regierungswechsel 1998 begann eine neue politische Richtung."
+  }
+};
+
+var PROFIL_FARBEN = {
+  zusammenhalt: "#3f8f5c",
+  aufbau:       "#2b5797",
+  reform:       "#d98324"
+};
+
+var PROFIL_NAMEN = {
+  zusammenhalt: "Zusammenhalt",
+  aufbau:       "Aufbau",
+  reform:       "Reformen"
+};
+
+
+// Ab hier läuft das Spiel.
+
+var reihenfolge = ["screen-start", "screen-1", "screen-2", "screen-3", "screen-4", "screen-ende"];
+var gewaehlteSchwerpunkte = [];
+var punkteStand = { zusammenhalt: 0, aufbau: 0, reform: 0 };
+
+// zeigt immer nur eine Seite an und versteckt alle anderen
+function zeigeScreen(id) {
+  for (var i = 0; i < reihenfolge.length; i++) {
+    document.getElementById(reihenfolge[i]).classList.add("hidden");
+  }
+  document.getElementById(id).classList.remove("hidden");
+  window.scrollTo(0, 0);
+  aktualisiereFortschritt(id);
+}
+
+// macht die kleinen Balken oben passend zur Seite
+function aktualisiereFortschritt(aktuelleId) {
+  var schrittNummern = { "screen-1": 1, "screen-2": 2, "screen-3": 3, "screen-4": 4 };
+  var aktuellerSchritt = schrittNummern[aktuelleId];
+  if (!aktuellerSchritt) {
+    aktuellerSchritt = 0;
+  }
+
+  var leisten = document.querySelectorAll(".fortschritt");
+  for (var i = 0; i < leisten.length; i++) {
+    var html = "";
+    for (var n = 1; n <= 4; n++) {
+      var klasse = "punkt";
+      if (n < aktuellerSchritt)  { klasse = klasse + " fertig"; }
+      if (n === aktuellerSchritt) { klasse = klasse + " aktiv"; }
+      html = html + '<div class="' + klasse + '"></div>';
+    }
+    leisten[i].innerHTML = html;
+  }
+}
+
+// baut die Antwort-Buttons für eine Situation
+function baueOptionen(container, optionsListe, rueckmeldungContainer, weiterZuScreenId) {
+  container.innerHTML = "";
+  rueckmeldungContainer.innerHTML = "";
+
+  for (var i = 0; i < optionsListe.length; i++) {
+    erstelleEinenButton(optionsListe[i]);
+  }
+
+  function erstelleEinenButton(option) {
+    var btn = document.createElement("button");
+    btn.className = "option";
+    btn.innerHTML =
+      '<span class="option-titel">' + option.titel + '</span>' +
+      '<span class="option-text">' + option.text + '</span>';
+
+    btn.onclick = function () {
+      // alle Optionen sperren, damit man nur einmal klicken kann
+      var alle = container.querySelectorAll(".option");
+      for (var k = 0; k < alle.length; k++) {
+        alle[k].disabled = true;
+      }
+      btn.classList.add("gewaehlt");
+
+      gewaehlteSchwerpunkte.push(option.titel);
+
+      // Punkte dazuzählen
+      punkteStand.zusammenhalt = punkteStand.zusammenhalt + option.punkte.zusammenhalt;
+      punkteStand.aufbau       = punkteStand.aufbau       + option.punkte.aufbau;
+      punkteStand.reform       = punkteStand.reform       + option.punkte.reform;
+
+      var feedback = document.createElement("div");
+      feedback.className = "rueckmeldung";
+      feedback.textContent = option.rueckmeldung;
+
+      var weiterZeile = document.createElement("div");
+      weiterZeile.className = "weiter-zeile";
+
+      var weiterButton = document.createElement("button");
+      weiterButton.className = "btn";
+      weiterButton.textContent = "Weiter";
+      weiterButton.onclick = function () {
+        zeigeScreen(weiterZuScreenId);
+      };
+
+      weiterZeile.appendChild(weiterButton);
+      rueckmeldungContainer.innerHTML = "";
+      rueckmeldungContainer.appendChild(feedback);
+      rueckmeldungContainer.appendChild(weiterZeile);
+    };
+
+    container.appendChild(btn);
+  }
+}
+
+// baut das Balkendiagramm zur Wahl 1998
+function baueWahlChart() {
+  var chartContainer = document.getElementById("wahl-chart");
+  chartContainer.innerHTML = "";
+
+  for (var i = 0; i < WAHLERGEBNIS_1998.length; i++) {
+    var eintrag = WAHLERGEBNIS_1998[i];
+    var zeile = document.createElement("div");
+    zeile.className = "chart-zeile";
+    zeile.innerHTML =
+      '<span class="chart-partei">' + eintrag.partei + '</span>' +
+      '<span class="chart-track"><span class="chart-bar" style="background:' + eintrag.farbe + '"></span></span>' +
+      '<span class="chart-wert">' + String(eintrag.prozent).replace(".", ",") + ' %</span>';
+    chartContainer.appendChild(zeile);
+  }
+
+  // Balken erst kurz danach breit machen, dann sieht man die Animation
+  setTimeout(function () {
+    var balken = chartContainer.querySelectorAll(".chart-bar");
+    for (var i = 0; i < WAHLERGEBNIS_1998.length; i++) {
+      // *2 nur, damit die Balken nicht so winzig aussehen
+      balken[i].style.width = (WAHLERGEBNIS_1998[i].prozent * 2) + "%";
+    }
+  }, 100);
+
+  document.getElementById("gewinner-hinweis").innerHTML =
+    "Die <b>SPD</b> erhielt mit 40,9 % den höchsten Stimmenanteil. " +
+    "Nach der Bundestagswahl wurde <b>Gerhard Schröder</b> neuer Bundeskanzler. " +
+    "Damit endete die 16-jährige Amtszeit von Helmut Kohl.";
+}
+
+// sucht den Bereich mit den meisten Punkten
+function findeStaerkstenBereich() {
+  var bereiche = ["zusammenhalt", "aufbau", "reform"];
+  var bester = bereiche[0];
+  for (var i = 1; i < bereiche.length; i++) {
+    if (punkteStand[bereiche[i]] > punkteStand[bester]) {
+      bester = bereiche[i];
+    }
+  }
+  return bester;
+}
+
+// baut die ganze Ergebnis-Seite
+function baueErgebnis() {
+  var bester = findeStaerkstenBereich();
+  var typ = ERGEBNIS_TYPEN[bester];
+
+  document.getElementById("ergebnis-titel").textContent = typ.titel;
+  document.getElementById("ergebnis-text").textContent  = typ.text;
+  document.getElementById("ergebnis-note").textContent  = typ.note;
+
+  // die drei Balken mit dem Profil
+  var gesamt = punkteStand.zusammenhalt + punkteStand.aufbau + punkteStand.reform;
+  if (gesamt === 0) { gesamt = 1; }  // damit man nicht durch 0 teilt
+
+  var profilContainer = document.getElementById("profil-chart");
+  profilContainer.innerHTML = "";
+
+  var bereiche = ["zusammenhalt", "aufbau", "reform"];
+  for (var i = 0; i < bereiche.length; i++) {
+    var name = bereiche[i];
+    var anteil = Math.round(punkteStand[name] / gesamt * 100);
+    var zeile = document.createElement("div");
+    zeile.className = "profil-zeile";
+    zeile.innerHTML =
+      '<span class="profil-name">' + PROFIL_NAMEN[name] + '</span>' +
+      '<span class="profil-track"><span class="profil-bar" data-breite="' + anteil +
+      '" style="background:' + PROFIL_FARBEN[name] + '"></span></span>' +
+      '<span class="profil-wert">' + anteil + ' %</span>';
+    profilContainer.appendChild(zeile);
+  }
+
+  setTimeout(function () {
+    var balken = profilContainer.querySelectorAll(".profil-bar");
+    for (var i = 0; i < balken.length; i++) {
+      balken[i].style.width = balken[i].getAttribute("data-breite") + "%";
+    }
+  }, 100);
+
+  // Liste der eigenen Entscheidungen
+  var liste = document.getElementById("entscheidungs-liste");
+  liste.innerHTML = "";
+  for (var i = 0; i < gewaehlteSchwerpunkte.length; i++) {
+    var li = document.createElement("li");
+    li.innerHTML = '<span class="schritt">' + (i + 1) + '</span>' + gewaehlteSchwerpunkte[i];
+    liste.appendChild(li);
+  }
+}
+
+// schreibt die Faktenliste ganz unten
+function baueZusammenfassung() {
+  var liste = document.getElementById("zusammenfassung-liste");
+  liste.innerHTML = "";
+  for (var i = 0; i < ABSCHLUSS_FAKTEN.length; i++) {
+    var li = document.createElement("li");
+    li.textContent = ABSCHLUSS_FAKTEN[i];
+    liste.appendChild(li);
+  }
+}
+
+
+// Hier werden die Buttons mit den Seiten verbunden.
+
+document.getElementById("btn-start").onclick = function () {
+  baueOptionen(
+    document.getElementById("optionen-1"),
+    OPTIONEN_SITUATION_1,
+    document.getElementById("rueckmeldung-1"),
+    "screen-2"
+  );
+  zeigeScreen("screen-1");
+};
+
+// Situation 2 und 3 werden schon am Anfang vorbereitet,
+// damit die Optionen sofort da sind
+baueOptionen(
+  document.getElementById("optionen-2"),
+  OPTIONEN_SITUATION_2,
+  document.getElementById("rueckmeldung-2"),
+  "screen-3"
+);
+
+baueOptionen(
+  document.getElementById("optionen-3"),
+  OPTIONEN_SITUATION_3,
+  document.getElementById("rueckmeldung-3"),
+  "screen-4"
+);
+
+document.getElementById("btn-weiter-4").onclick = function () {
+  zeigeScreen("screen-ende");
+  baueErgebnis();
+  baueZusammenfassung();
+};
+
+document.getElementById("btn-neustart").onclick = function () {
+  gewaehlteSchwerpunkte = [];
+  punkteStand = { zusammenhalt: 0, aufbau: 0, reform: 0 };
+
+  // Optionen 2 und 3 neu aufbauen, damit sie wieder anklickbar sind
+  baueOptionen(
+    document.getElementById("optionen-2"),
+    OPTIONEN_SITUATION_2,
+    document.getElementById("rueckmeldung-2"),
+    "screen-3"
+  );
+  baueOptionen(
+    document.getElementById("optionen-3"),
+    OPTIONEN_SITUATION_3,
+    document.getElementById("rueckmeldung-3"),
+    "screen-4"
+  );
+
+  document.getElementById("rueckmeldung-1").innerHTML = "";
+  zeigeScreen("screen-start");
+};
+
+// Diagramm gleich am Anfang bauen
+baueWahlChart();
+
+</script>
+</body>
+</html>
